@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UserNotifications
 
 struct AddCardView: View {
     @ObservedObject var userManager: UserManager
@@ -15,8 +16,8 @@ struct AddCardView: View {
     @State private var expiryDate = ""
     @State private var cvv = ""
     @State private var selectedGradient: [Color] = [Color.blue, Color.purple]
-    @State private var showingProviderNotification = false
     @State private var pendingCard: CardData?
+    @State private var isProcessing = false
     @Environment(\.dismiss) private var dismiss
     
     let gradientOptions: [[Color]] = [
@@ -165,34 +166,56 @@ struct AddCardView: View {
                             
                             // Add card button
                             Button(action: {
+                                guard !isProcessing else { return }
+                                isProcessing = true
+                                
                                 let newCard = CardData(
                                     holderName: userManager.currentUser.name,
                                     cardNumber: cardNumber,
                                     expiryDate: expiryDate,
                                     cvv: cvv,
                                     gradientColors: selectedGradient,
-                                    cardType: cardType
+                                    cardType: cardType,
+                                    userICNumber: userManager.currentUser.icNumber
                                 )
                                 pendingCard = newCard
                                 
-                                // Simulate delay and then show provider notification
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                    showingProviderNotification = true
+                                // Send system notification for card binding approval
+                                NotificationManager.shared.scheduleCardBindingNotification(
+                                    cardType: cardType,
+                                    cardNumber: cardNumber.replacingOccurrences(of: " ", with: ""),
+                                    userName: userManager.currentUser.name
+                                ) { success in
+                                    if success {
+                                        print("Card binding notification sent successfully")
+                                    } else {
+                                        print("Failed to send card binding notification")
+                                        // Fallback: add card directly if notification fails
+                                        self.addCardDirectly()
+                                    }
+                                    isProcessing = false
                                 }
                             }) {
-                                Text("Add Card")
-                                    .font(.system(size: 18, weight: .bold, design: .default))
-                                    .foregroundColor(.black)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 56)
-                                    .background(isFormValid ? Color.primaryYellow : Color.gray.opacity(0.3))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .stroke(Color.black, lineWidth: 3)
-                                    )
-                                    .cornerRadius(12)
+                                HStack {
+                                    if isProcessing {
+                                        ProgressView()
+                                            .scaleEffect(0.8)
+                                            .foregroundColor(.black)
+                                    }
+                                    Text(isProcessing ? "Processing..." : "Add Card")
+                                        .font(.system(size: 18, weight: .bold, design: .default))
+                                        .foregroundColor(.black)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
+                                .background(isFormValid && !isProcessing ? Color.primaryYellow : Color.gray.opacity(0.3))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.black, lineWidth: 3)
+                                )
+                                .cornerRadius(12)
                             }
-                            .disabled(!isFormValid)
+                            .disabled(!isFormValid || isProcessing)
                             .padding(.horizontal, 20)
                             .padding(.bottom, 30)
                         }
@@ -201,28 +224,53 @@ struct AddCardView: View {
             }
         }
         .navigationBarHidden(true)
-        .overlay(
-            // Provider notification overlay
-            Group {
-                if showingProviderNotification, let card = pendingCard {
-                    CardProviderNotification(
-                        cardType: card.cardType,
-                        cardNumber: card.cardNumber.replacingOccurrences(of: " ", with: ""),
-                        userName: userManager.currentUser.name,
-                        onConfirm: {
-                            showingProviderNotification = false
-                            onAddCard(card)
-                            dismiss()
-                        },
-                        onDeny: {
-                            showingProviderNotification = false
-                            pendingCard = nil
-                            // Card binding was denied, user can try again
-                        }
-                    )
-                }
+        .onAppear {
+            setupNotificationObservers()
+        }
+        .onDisappear {
+            removeNotificationObservers()
+        }
+    }
+    
+    private func setupNotificationObservers() {
+        NotificationCenter.default.addObserver(
+            forName: .cardBindingConfirmed,
+            object: nil,
+            queue: .main
+        ) { _ in
+            if let card = pendingCard {
+                addCardDirectly()
             }
-        )
+        }
+        
+        NotificationCenter.default.addObserver(
+            forName: .cardBindingDenied,
+            object: nil,
+            queue: .main
+        ) { _ in
+            pendingCard = nil
+            isProcessing = false
+        }
+    }
+    
+    private func removeNotificationObservers() {
+        NotificationCenter.default.removeObserver(self, name: .cardBindingConfirmed, object: nil)
+        NotificationCenter.default.removeObserver(self, name: .cardBindingDenied, object: nil)
+    }
+    
+    private func addCardDirectly() {
+        guard let card = pendingCard else { return }
+        
+        // Add card to user manager
+        userManager.addCard(card)
+        
+        // Call the completion handler
+        onAddCard(card)
+        
+        // Reset state and dismiss
+        pendingCard = nil
+        isProcessing = false
+        dismiss()
     }
     
     private func formatCardNumber(_ number: String) -> String {

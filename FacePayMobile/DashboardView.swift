@@ -229,7 +229,8 @@ struct DashboardView: View {
         .navigationBarHidden(true)
         .sheet(isPresented: $showingAddCard) {
             AddCardView(userManager: userManager) { cardData in
-                userManager.addCard(cardData)
+                // Card will be added via system notification confirmation
+                // No need to add card here anymore since it's handled by notification response
                 showingAddCard = false
             }
         }

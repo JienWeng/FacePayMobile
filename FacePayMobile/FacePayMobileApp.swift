@@ -6,9 +6,16 @@
 //
 
 import SwiftUI
+import UserNotifications
 
 @main
 struct FacePayMobileApp: App {
+    init() {
+        // Request notification permissions on app launch
+        NotificationManager.shared.requestPermission()
+        NotificationManager.shared.setupNotificationActions()
+    }
+    
     var body: some Scene {
         WindowGroup {
             LandingView()
