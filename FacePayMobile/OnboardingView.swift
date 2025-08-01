@@ -180,6 +180,102 @@ struct ICWelcomeStep: View {
     }
 }
 
+// MARK: - Face Registration Step
+struct FaceRegistrationStep: View {
+    let onNext: () -> Void
+    @State private var showingFaceRegistration = false
+    @State private var isRegistrationComplete = false
+    
+    var body: some View {
+        VStack(spacing: 30) {
+            if !showingFaceRegistration && !isRegistrationComplete {
+                // Initial face registration prompt
+                VStack(spacing: 20) {
+                    Image(systemName: "faceid")
+                        .font(.system(size: 60, weight: .bold))
+                        .foregroundColor(.primaryYellow)
+                    
+                    Text("Face Registration")
+                        .font(.system(size: 24, weight: .bold, design: .default))
+                        .foregroundColor(.black)
+                    
+                    Text("Set up secure face authentication for quick payments")
+                        .font(.system(size: 16, weight: .medium, design: .default))
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 40)
+                }
+                
+                Spacer()
+                
+                // Start Registration button
+                Button(action: {
+                    showingFaceRegistration = true
+                }) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "faceid")
+                            .font(.system(size: 20, weight: .black))
+                        Text("Start Face Scan")
+                            .font(.system(size: 18, weight: .bold, design: .default))
+                    }
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
+                    .background(Color.primaryYellow)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.black, lineWidth: 3)
+                    )
+                    .cornerRadius(12)
+                }
+                .padding(.horizontal, 32)
+                
+            } else if isRegistrationComplete {
+                // Registration complete
+                VStack(spacing: 20) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 60, weight: .bold))
+                        .foregroundColor(.green)
+                    
+                    Text("Face Registered!")
+                        .font(.system(size: 24, weight: .bold, design: .default))
+                        .foregroundColor(.black)
+                    
+                    Text("Your face has been successfully registered for secure authentication")
+                        .font(.system(size: 16, weight: .medium, design: .default))
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 40)
+                }
+                
+                Spacer()
+                
+                Button(action: onNext) {
+                    Text("Continue")
+                        .font(.system(size: 18, weight: .bold, design: .default))
+                        .foregroundColor(.black)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(Color.primaryYellow)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.black, lineWidth: 3)
+                        )
+                        .cornerRadius(12)
+                }
+                .padding(.horizontal, 32)
+            }
+        }
+        .fullScreenCover(isPresented: $showingFaceRegistration) {
+            FaceRegistrationView()
+                .onDisappear {
+                    // Assume registration was completed when view dismisses
+                    isRegistrationComplete = true
+                }
+        }
+    }
+}
+
 #Preview {
     OnboardingView()
 }

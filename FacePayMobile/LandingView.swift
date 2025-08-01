@@ -10,7 +10,6 @@ import SwiftUI
 struct LandingView: View {
     @State private var showOnboarding = false
     @State private var showSignIn = false
-    @State private var showFaceSignInCamera = false
     @StateObject private var userManager = UserManager()
     
     var body: some View {
@@ -131,7 +130,7 @@ struct LandingView: View {
                     }
                     
                     Button(action: {
-                        showFaceSignInCamera = true
+                        showSignIn = true
                     }) {
                         Text("Sign In with Face ID")
                             .font(.system(size: 18, weight: .bold, design: .default))
@@ -156,17 +155,6 @@ struct LandingView: View {
         }
         .fullScreenCover(isPresented: $showSignIn) {
             FaceSignInView(userManager: userManager)
-        }
-        .fullScreenCover(isPresented: $showFaceSignInCamera) {
-            FaceSignInCameraView(
-                onSignInSuccess: {
-                    showFaceSignInCamera = false
-                    userManager.signIn()
-                },
-                onDismiss: {
-                    showFaceSignInCamera = false
-                }
-            )
         }
         .fullScreenCover(isPresented: $userManager.isSignedIn) {
             DashboardView(userManager: userManager)

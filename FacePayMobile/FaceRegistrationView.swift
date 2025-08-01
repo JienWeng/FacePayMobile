@@ -1,5 +1,5 @@
 //
-//  FaceSignInView.swift
+//  FaceRegistrationView.swift
 //  FacePayMobile
 //
 //  Created by Lai Jien Weng on 31/07/2025.
@@ -9,45 +9,29 @@ import SwiftUI
 import AVFoundation
 import Vision
 
-struct FaceSignInView: View {
-    @ObservedObject var userManager: UserManager
+struct FaceRegistrationView: View {
     @StateObject private var faceDataManager = FaceDataManager()
-    @Environment(\.dismiss) private var dismiss
-    @State private var isScanning = true
+    @State private var isScanning = false
     @State private var progress: Double = 0.0
-    @State private var statusMessage = "Look at the camera to sign in"
-    @State private var authenticationResult: AuthResult?
-    @State private var showResult = false
-    
-    enum AuthResult {
-        case success
-        case failed
-        case noFaceRegistered
-    }
+    @State private var statusMessage = "Position your face in the circle"
+    @State private var showSuccess = false
+    @State private var livenessDetected = false
+    @State private var faceQuality: Float = 0.0
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         ZStack {
-            // Black background as fallback
-            Color.black
-                .ignoresSafeArea()
-            
-            // Camera Background - This should be the main view
-            FaceAuthController(
+            // Camera Background
+            FaceCameraController(
                 isScanning: $isScanning,
                 progress: $progress,
                 statusMessage: $statusMessage,
-                authenticationResult: $authenticationResult,
-                showResult: $showResult,
+                showSuccess: $showSuccess,
+                livenessDetected: $livenessDetected,
+                faceQuality: $faceQuality,
                 faceDataManager: faceDataManager
             )
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .clipped()
-            
-            // Face detection frame overlay
-            Circle()
-                .stroke(Color.white.opacity(0.8), lineWidth: 3)
-                .frame(width: 200, height: 200)
-                .position(x: UIScreen.main.bounds.width / 2, y: UIScreen.main.bounds.height / 2 - 50)
+            .ignoresSafeArea()
             
             // Overlay UI
             VStack {
@@ -68,62 +52,91 @@ struct FaceSignInView: View {
                 
                 Spacer().frame(height: 50)
                 
-                // Circular progress indicator
+                // Circular progress with face outline
                 ZStack {
                     // Background circle
                     Circle()
                         .stroke(Color.white.opacity(0.3), lineWidth: 4)
-                        .frame(width: 160, height: 160)
+                        .frame(width: 200, height: 200)
                     
                     // Progress circle
                     Circle()
                         .trim(from: 0.0, to: CGFloat(progress))
                         .stroke(
                             LinearGradient(
-                                gradient: Gradient(colors: getProgressColors()),
+                                gradient: Gradient(colors: livenessDetected ? [.green, .blue] : [.yellow, .orange]),
                                 startPoint: .topTrailing,
                                 endPoint: .bottomLeading
                             ),
                             style: StrokeStyle(lineWidth: 6, lineCap: .round)
                         )
-                        .frame(width: 160, height: 160)
+                        .frame(width: 200, height: 200)
                         .rotationEffect(.degrees(-90))
                         .animation(.easeInOut(duration: 0.3), value: progress)
                     
-                    // Center icon
-                    Image(systemName: getCenterIcon())
-                        .font(.system(size: 40, weight: .semibold))
-                        .foregroundColor(getIconColor())
-                        .scaleEffect(showResult ? 1.2 : 1.0)
-                        .animation(.spring(response: 0.5, dampingFraction: 0.6), value: showResult)
+                    // Face quality indicator
+                    if faceQuality > 0 {
+                        VStack {
+                            Image(systemName: livenessDetected ? "checkmark.circle.fill" : "face.dashed")
+                                .font(.system(size: 30))
+                                .foregroundColor(livenessDetected ? .green : .white)
+                            
+                            Text("\(Int(faceQuality * 100))%")
+                                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                .foregroundColor(.white)
+                        }
+                    } else {
+                        Image(systemName: "face.dashed")
+                            .font(.system(size: 40))
+                            .foregroundColor(.white.opacity(0.7))
+                    }
                 }
                 
-                Spacer().frame(height: 80)
+                Spacer().frame(height: 100)
                 
-                // Action buttons
+                // Control buttons
                 HStack(spacing: 40) {
                     // Cancel button
                     Button(action: {
                         dismiss()
                     }) {
-                        Image(systemName: "arrow.left")
+                        Image(systemName: "xmark")
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(width: 60, height: 60)
                             .background(Circle().fill(Color.black.opacity(0.5)))
                     }
                     
-                    // Retry button (shown after failed auth)
-                    if showResult && authenticationResult == .failed {
-                        Button(action: {
-                            resetAuthentication()
-                        }) {
-                            Image(systemName: "arrow.clockwise")
-                                .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor(.white)
-                                .frame(width: 60, height: 60)
-                                .background(Circle().fill(Color.blue.opacity(0.6)))
+                    // Start/Stop scanning button
+                    Button(action: {
+                        if showSuccess {
+                            // Registration complete, navigate back
+                            dismiss()
+                        } else {
+                            isScanning.toggle()
                         }
+                    }) {
+                        Image(systemName: showSuccess ? "checkmark" : (isScanning ? "stop.circle" : "record.circle"))
+                            .font(.system(size: 30, weight: .semibold))
+                            .foregroundColor(showSuccess ? .green : .white)
+                            .frame(width: 80, height: 80)
+                            .background(
+                                Circle().fill(
+                                    showSuccess ? Color.green.opacity(0.2) : 
+                                    (isScanning ? Color.red.opacity(0.3) : Color.white.opacity(0.2))
+                                )
+                            )
+                    }
+                    
+                    // Settings button
+                    Button(action: {
+                        // Handle settings
+                    }) {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(width: 60, height: 60)
+                            .background(Circle().fill(Color.black.opacity(0.5)))
                     }
                 }
                 
@@ -131,85 +144,40 @@ struct FaceSignInView: View {
             }
         }
         .navigationBarHidden(true)
-        .onChange(of: authenticationResult) { result in
-            if result != nil {
-                showResult = true
-                
-                if result == .success {
-                    // Navigate to dashboard after short delay
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                        userManager.signIn()
-                        dismiss()
-                    }
+        .onAppear {
+            // Auto-start scanning
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                isScanning = true
+            }
+        }
+        .onChange(of: showSuccess) { success in
+            if success {
+                // Auto-dismiss after successful registration
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    dismiss()
                 }
             }
         }
     }
-    
-    private func getProgressColors() -> [Color] {
-        switch authenticationResult {
-        case .success:
-            return [.green, .mint]
-        case .failed:
-            return [.red, .orange]
-        case .noFaceRegistered:
-            return [.yellow, .orange]
-        case .none:
-            return [.blue, .cyan]
-        }
-    }
-    
-    private func getCenterIcon() -> String {
-        switch authenticationResult {
-        case .success:
-            return "checkmark.circle.fill"
-        case .failed:
-            return "xmark.circle.fill"
-        case .noFaceRegistered:
-            return "person.crop.circle.badge.exclamationmark"
-        case .none:
-            return "faceid"
-        }
-    }
-    
-    private func getIconColor() -> Color {
-        switch authenticationResult {
-        case .success:
-            return .green
-        case .failed:
-            return .red
-        case .noFaceRegistered:
-            return .yellow
-        case .none:
-            return .white
-        }
-    }
-    
-    private func resetAuthentication() {
-        authenticationResult = nil
-        showResult = false
-        progress = 0.0
-        statusMessage = "Look at the camera to sign in"
-        isScanning = true
-    }
 }
 
-struct FaceAuthController: UIViewControllerRepresentable {
+struct FaceCameraController: UIViewControllerRepresentable {
     @Binding var isScanning: Bool
     @Binding var progress: Double
     @Binding var statusMessage: String
-    @Binding var authenticationResult: FaceSignInView.AuthResult?
-    @Binding var showResult: Bool
+    @Binding var showSuccess: Bool
+    @Binding var livenessDetected: Bool
+    @Binding var faceQuality: Float
     let faceDataManager: FaceDataManager
     
     func makeUIViewController(context: Context) -> UIViewController {
-        let controller = FaceAuthViewController()
+        let controller = FaceCameraViewController()
         controller.delegate = context.coordinator
         return controller
     }
     
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-        if let controller = uiViewController as? FaceAuthViewController {
+        if let controller = uiViewController as? FaceCameraViewController {
             controller.isScanning = isScanning
         }
     }
@@ -218,42 +186,45 @@ struct FaceAuthController: UIViewControllerRepresentable {
         Coordinator(self)
     }
     
-    class Coordinator: NSObject, FaceAuthDelegate {
-        let parent: FaceAuthController
-        private var authStartTime: Date?
-        private let authDuration: TimeInterval = 2.0
-        private var authenticatingFace: VNFaceObservation?
+    class Coordinator: NSObject, FaceCameraDelegate {
+        let parent: FaceCameraController
+        private var scanStartTime: Date?
+        private let scanDuration: TimeInterval = 3.0
+        private var lastFaceObservation: VNFaceObservation?
+        private var livenessFrames: [VNFaceObservation] = []
         
-        init(_ parent: FaceAuthController) {
+        init(_ parent: FaceCameraController) {
             self.parent = parent
         }
         
         func didDetectFace(_ observation: VNFaceObservation) {
             DispatchQueue.main.async {
-                // Check if we have registered face data
-                guard self.parent.faceDataManager.isRegistered else {
-                    self.parent.authenticationResult = .noFaceRegistered
-                    self.parent.statusMessage = "No face registered. Please register first."
-                    self.parent.isScanning = false
-                    return
-                }
+                self.parent.faceQuality = observation.faceCaptureQuality ?? 0.0
                 
-                // Start authentication timer
-                if self.parent.isScanning && self.authStartTime == nil {
-                    self.authStartTime = Date()
-                    self.authenticatingFace = observation
-                    self.parent.statusMessage = "Authenticating..."
+                // Check if scanning should start
+                if self.parent.isScanning && self.scanStartTime == nil {
+                    self.scanStartTime = Date()
+                    self.parent.statusMessage = "Hold still while we scan..."
+                    self.livenessFrames.removeAll()
                 }
                 
                 // Update progress
-                if let startTime = self.authStartTime {
+                if let startTime = self.scanStartTime {
                     let elapsed = Date().timeIntervalSince(startTime)
-                    let progress = min(elapsed / self.authDuration, 1.0)
+                    let progress = min(elapsed / self.scanDuration, 1.0)
                     self.parent.progress = progress
                     
-                    // Complete authentication
-                    if progress >= 1.0 {
-                        self.completeAuthentication(observation)
+                    // Collect frames for liveness detection
+                    self.livenessFrames.append(observation)
+                    
+                    // Check liveness
+                    if self.livenessFrames.count > 10 {
+                        self.parent.livenessDetected = self.detectLiveness()
+                    }
+                    
+                    // Complete scanning
+                    if progress >= 1.0 && self.parent.livenessDetected {
+                        self.completeScan(observation)
                     }
                 }
             }
@@ -261,56 +232,69 @@ struct FaceAuthController: UIViewControllerRepresentable {
         
         func didLoseFace() {
             DispatchQueue.main.async {
-                if self.parent.isScanning && !self.parent.showResult {
-                    self.resetAuthentication()
-                    self.parent.statusMessage = "Look at the camera to sign in"
+                if self.parent.isScanning && !self.parent.showSuccess {
+                    self.resetScan()
+                    self.parent.statusMessage = "Position your face in the circle"
                 }
+                self.parent.faceQuality = 0.0
             }
         }
         
-        private func completeAuthentication(_ observation: VNFaceObservation) {
-            let currentFeatures = FaceFeatures(observation: observation)
-            let similarity = parent.faceDataManager.compareFaces(currentFeatures)
+        private func detectLiveness() -> Bool {
+            guard livenessFrames.count >= 10 else { return false }
             
-            let threshold: Float = 0.75 // Adjust based on security requirements
+            // Simple liveness detection based on face movement
+            let recentFrames = Array(livenessFrames.suffix(10))
+            var movements: [Double] = []
             
-            if similarity >= threshold {
-                parent.authenticationResult = .success
-                parent.statusMessage = "Authentication successful!"
+            for i in 1..<recentFrames.count {
+                let prev = recentFrames[i-1].boundingBox
+                let curr = recentFrames[i].boundingBox
                 
-                // Haptic feedback
-                let successFeedback = UINotificationFeedbackGenerator()
-                successFeedback.notificationOccurred(.success)
-            } else {
-                parent.authenticationResult = .failed
-                parent.statusMessage = "Authentication failed. Please try again."
-                
-                // Haptic feedback
-                let errorFeedback = UINotificationFeedbackGenerator()
-                errorFeedback.notificationOccurred(.error)
+                let dx = abs(prev.midX - curr.midX)
+                let dy = abs(prev.midY - curr.midY)
+                let movement = sqrt(dx * dx + dy * dy)
+                movements.append(movement)
             }
             
+            let averageMovement = movements.reduce(0, +) / Double(movements.count)
+            
+            // Detect if there's subtle but consistent movement (indicating a live person)
+            return averageMovement > 0.001 && averageMovement < 0.05
+        }
+        
+        private func completeScan(_ observation: VNFaceObservation) {
+            let faceFeatures = FaceFeatures(observation: observation)
+            parent.faceDataManager.registerFace(faceFeatures)
+            
+            parent.statusMessage = "Registration successful!"
+            parent.showSuccess = true
             parent.isScanning = false
-            authStartTime = nil
-            authenticatingFace = nil
+            scanStartTime = nil
+            livenessFrames.removeAll()
+            
+            // Haptic feedback
+            let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
+            impactFeedback.impactOccurred()
         }
         
-        private func resetAuthentication() {
-            authStartTime = nil
+        private func resetScan() {
+            scanStartTime = nil
             parent.progress = 0.0
-            authenticatingFace = nil
+            parent.livenessDetected = false
+            livenessFrames.removeAll()
         }
     }
 }
 
-protocol FaceAuthDelegate: AnyObject {
+protocol FaceCameraDelegate: AnyObject {
     func didDetectFace(_ observation: VNFaceObservation)
     func didLoseFace()
 }
 
-class FaceAuthViewController: UIViewController {
-    weak var delegate: FaceAuthDelegate?
-    var isScanning: Bool = true
+class FaceCameraViewController: UIViewController {
+    weak var delegate: FaceCameraDelegate?
+    var isScanning: Bool = false
     
     private var captureSession: AVCaptureSession!
     private var previewLayer: AVCaptureVideoPreviewLayer!
@@ -330,18 +314,18 @@ class FaceAuthViewController: UIViewController {
     private func updatePreviewLayerFrame() {
         if let previewLayer = previewLayer {
             previewLayer.frame = view.bounds
-            print("Preview layer frame updated to: \(view.bounds)")
+            print("Face registration preview layer frame updated to: \(view.bounds)")
         }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        print("FaceAuthViewController will appear")
+        print("FaceCameraViewController will appear")
         
         if captureSession?.isRunning == false {
             DispatchQueue.global(qos: .background).async { [weak self] in
                 self?.captureSession?.startRunning()
-                print("Restarted camera session")
+                print("Restarted face registration camera session")
             }
         }
         
@@ -383,18 +367,18 @@ class FaceAuthViewController: UIViewController {
     private func configureCameraSession() {
         // Check if running in simulator
         #if targetEnvironment(simulator)
-        print("Running in simulator - camera preview not available")
+        print("Running in simulator - face registration camera preview not available")
         // Create a simple colored background to show the view is working
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             let backgroundLayer = CALayer()
-            backgroundLayer.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.3).cgColor
+            backgroundLayer.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.3).cgColor
             backgroundLayer.frame = self.view.bounds
             self.view.layer.insertSublayer(backgroundLayer, at: 0)
             
             // Add a label to show this is simulator mode
             let label = UILabel()
-            label.text = "Camera Preview\n(Simulator Mode)"
+            label.text = "Face Registration\n(Simulator Mode)"
             label.textAlignment = .center
             label.numberOfLines = 0
             label.textColor = .white
@@ -402,13 +386,13 @@ class FaceAuthViewController: UIViewController {
             label.frame = self.view.bounds
             self.view.addSubview(label)
             
-            print("Simulator camera placeholder added")
+            print("Simulator face registration placeholder added")
         }
         return
         #endif
         
         captureSession = AVCaptureSession()
-        captureSession.sessionPreset = .medium // Use medium for better performance
+        captureSession.sessionPreset = .high
         
         guard let frontCamera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front) else {
             print("Unable to access front camera")
@@ -440,7 +424,7 @@ class FaceAuthViewController: UIViewController {
                 // Ensure the preview layer is at the bottom of the view hierarchy
                 self.view.layer.insertSublayer(self.previewLayer!, at: 0)
                 
-                print("Preview layer added with frame: \(self.view.bounds)")
+                print("Face registration preview layer added with frame: \(self.view.bounds)")
                 
                 // Update the layer frame after a short delay to ensure proper layout
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -451,18 +435,17 @@ class FaceAuthViewController: UIViewController {
             // Start session on background queue
             DispatchQueue.global(qos: .background).async { [weak self] in
                 self?.captureSession?.startRunning()
-                print("Camera session started")
+                print("Face registration camera session started")
             }
             
         } catch {
-            print("Error setting up camera: \(error)")
+            print("Error setting up face registration camera: \(error)")
         }
     }
 }
 
-extension FaceAuthViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
+extension FaceCameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
     func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        guard isScanning else { return }
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         
         let faceDetectionRequest = VNDetectFaceLandmarksRequest { [weak self] request, error in
@@ -487,5 +470,5 @@ extension FaceAuthViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
 }
 
 #Preview {
-    FaceSignInView(userManager: UserManager())
+    FaceRegistrationView()
 }

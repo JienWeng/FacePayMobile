@@ -18,6 +18,7 @@ struct ICScanStep: View {
     @State private var isProcessing = false
     @State private var showingNameEdit = false
     @State private var editableName = ""
+    @State private var rotationAngle: Double = 0
     
     var body: some View {
         VStack(spacing: 30) {
@@ -41,12 +42,47 @@ struct ICScanStep: View {
                 Spacer()
                 
                 if isProcessing {
-                    VStack(spacing: 16) {
-                        ProgressView()
-                            .scaleEffect(1.5)
-                        Text("Processing IC...")
-                            .font(.system(size: 16, weight: .medium, design: .default))
-                            .foregroundColor(.gray)
+                    VStack(spacing: 20) {
+                        ZStack {
+                            // Background circle
+                            Circle()
+                                .stroke(Color.primaryYellow.opacity(0.3), lineWidth: 4)
+                                .frame(width: 80, height: 80)
+                            
+                            // Spinning circle
+                            Circle()
+                                .trim(from: 0.0, to: 0.75)
+                                .stroke(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [.primaryYellow, .orange]),
+                                        startPoint: .topTrailing,
+                                        endPoint: .bottomLeading
+                                    ),
+                                    style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                                )
+                                .frame(width: 80, height: 80)
+                                .rotationEffect(.degrees(rotationAngle))
+                                .onAppear {
+                                    withAnimation(.linear(duration: 1.0).repeatForever(autoreverses: false)) {
+                                        rotationAngle = 360
+                                    }
+                                }
+                            
+                            // Center icon
+                            Image(systemName: "doc.text.viewfinder")
+                                .font(.system(size: 24, weight: .semibold))
+                                .foregroundColor(.primaryYellow)
+                        }
+                        
+                        VStack(spacing: 8) {
+                            Text("Processing IC...")
+                                .font(.system(size: 18, weight: .semibold, design: .default))
+                                .foregroundColor(.black)
+                            
+                            Text("Extracting information")
+                                .font(.system(size: 14, weight: .medium, design: .default))
+                                .foregroundColor(.gray)
+                        }
                     }
                     .padding()
                 }
