@@ -15,6 +15,8 @@ struct AddCardView: View {
     @State private var expiryDate = ""
     @State private var cvv = ""
     @State private var selectedGradient: [Color] = [Color.blue, Color.purple]
+    @State private var showingProviderNotification = false
+    @State private var pendingCard: CardData?
     @Environment(\.dismiss) private var dismiss
     
     let gradientOptions: [[Color]] = [
@@ -171,7 +173,12 @@ struct AddCardView: View {
                                     gradientColors: selectedGradient,
                                     cardType: cardType
                                 )
-                                onAddCard(newCard)
+                                pendingCard = newCard
+                                
+                                // Simulate delay and then show provider notification
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                    showingProviderNotification = true
+                                }
                             }) {
                                 Text("Add Card")
                                     .font(.system(size: 18, weight: .bold, design: .default))
@@ -194,6 +201,28 @@ struct AddCardView: View {
             }
         }
         .navigationBarHidden(true)
+        .overlay(
+            // Provider notification overlay
+            Group {
+                if showingProviderNotification, let card = pendingCard {
+                    CardProviderNotification(
+                        cardType: card.cardType,
+                        cardNumber: card.cardNumber.replacingOccurrences(of: " ", with: ""),
+                        userName: userManager.currentUser.name,
+                        onConfirm: {
+                            showingProviderNotification = false
+                            onAddCard(card)
+                            dismiss()
+                        },
+                        onDeny: {
+                            showingProviderNotification = false
+                            pendingCard = nil
+                            // Card binding was denied, user can try again
+                        }
+                    )
+                }
+            }
+        )
     }
     
     private func formatCardNumber(_ number: String) -> String {

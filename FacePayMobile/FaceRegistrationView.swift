@@ -10,18 +10,21 @@ import AVFoundation
 import Vision
 
 struct FaceRegistrationView: View {
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var faceDataManager = FaceDataManager()
+    
     @State private var isScanning = false
     @State private var progress: Double = 0.0
     @State private var statusMessage = "Position your face in the circle"
     @State private var showSuccess = false
     @State private var livenessDetected = false
     @State private var faceQuality: Float = 0.0
-    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         ZStack {
-            // Camera Background
+            Color.black.ignoresSafeArea()
+            
+            // Camera view
             FaceCameraController(
                 isScanning: $isScanning,
                 progress: $progress,
@@ -33,123 +36,84 @@ struct FaceRegistrationView: View {
             )
             .ignoresSafeArea()
             
-            // Overlay UI
+            // UI overlay
             VStack {
                 Spacer()
                 
-                // Status message
-                Text(statusMessage)
-                    .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 20)
-                    .multilineTextAlignment(.center)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.black.opacity(0.5))
-                            .padding(.horizontal, -10)
-                            .padding(.vertical, -5)
-                    )
-                
-                Spacer().frame(height: 50)
-                
-                // Circular progress with face outline
+                // Face circle overlay
                 ZStack {
-                    // Background circle
+                    // Outer circle
                     Circle()
-                        .stroke(Color.white.opacity(0.3), lineWidth: 4)
-                        .frame(width: 200, height: 200)
+                        .stroke(Color.white.opacity(0.5), lineWidth: 3)
+                        .frame(width: 280, height: 280)
                     
                     // Progress circle
                     Circle()
-                        .trim(from: 0.0, to: CGFloat(progress))
+                        .trim(from: 0, to: progress)
                         .stroke(
-                            LinearGradient(
-                                gradient: Gradient(colors: livenessDetected ? [.green, .blue] : [.yellow, .orange]),
-                                startPoint: .topTrailing,
-                                endPoint: .bottomLeading
-                            ),
+                            livenessDetected ? Color.green : Color.primaryYellow,
                             style: StrokeStyle(lineWidth: 6, lineCap: .round)
                         )
-                        .frame(width: 200, height: 200)
+                        .frame(width: 280, height: 280)
                         .rotationEffect(.degrees(-90))
                         .animation(.easeInOut(duration: 0.3), value: progress)
                     
-                    // Face quality indicator
+                    // Quality indicator
                     if faceQuality > 0 {
-                        VStack {
-                            Image(systemName: livenessDetected ? "checkmark.circle.fill" : "face.dashed")
-                                .font(.system(size: 30))
-                                .foregroundColor(livenessDetected ? .green : .white)
-                            
-                            Text("\(Int(faceQuality * 100))%")
-                                .font(.system(size: 16, weight: .semibold, design: .rounded))
-                                .foregroundColor(.white)
-                        }
-                    } else {
-                        Image(systemName: "face.dashed")
-                            .font(.system(size: 40))
-                            .foregroundColor(.white.opacity(0.7))
+                        Circle()
+                            .fill(Color.green.opacity(Double(faceQuality)))
+                            .frame(width: 20, height: 20)
+                            .offset(y: -140)
                     }
                 }
                 
-                Spacer().frame(height: 100)
+                Spacer()
                 
-                // Control buttons
-                HStack(spacing: 40) {
-                    // Cancel button
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.white)
-                            .frame(width: 60, height: 60)
-                            .background(Circle().fill(Color.black.opacity(0.5)))
+                // Status and controls
+                VStack(spacing: 20) {
+                    // Status message
+                    Text(statusMessage)
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 40)
+                    
+                    // Success checkmark
+                    if showSuccess {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(.green)
+                            .scaleEffect(showSuccess ? 1.0 : 0.5)
+                            .animation(.spring(response: 0.5, dampingFraction: 0.7), value: showSuccess)
                     }
                     
-                    // Start/Stop scanning button
-                    Button(action: {
-                        if showSuccess {
-                            // Registration complete, navigate back
-                            dismiss()
-                        } else {
-                            isScanning.toggle()
+                    // Start/Stop button
+                    if !showSuccess {
+                        Button(action: {
+                            if isScanning {
+                                stopScanning()
+                            } else {
+                                startScanning()
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName: isScanning ? "stop.fill" : "camera.fill")
+                                    .font(.system(size: 16, weight: .bold))
+                                Text(isScanning ? "Stop Scanning" : "Start Scanning")
+                                    .font(.system(size: 16, weight: .bold))
+                            }
+                            .foregroundColor(.black)
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 12)
+                            .background(Color.primaryYellow)
+                            .cornerRadius(25)
                         }
-                    }) {
-                        Image(systemName: showSuccess ? "checkmark" : (isScanning ? "stop.circle" : "record.circle"))
-                            .font(.system(size: 30, weight: .semibold))
-                            .foregroundColor(showSuccess ? .green : .white)
-                            .frame(width: 80, height: 80)
-                            .background(
-                                Circle().fill(
-                                    showSuccess ? Color.green.opacity(0.2) : 
-                                    (isScanning ? Color.red.opacity(0.3) : Color.white.opacity(0.2))
-                                )
-                            )
-                    }
-                    
-                    // Settings button
-                    Button(action: {
-                        // Handle settings
-                    }) {
-                        Image(systemName: "gearshape")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.white)
-                            .frame(width: 60, height: 60)
-                            .background(Circle().fill(Color.black.opacity(0.5)))
                     }
                 }
-                
-                Spacer().frame(height: 50)
+                .padding(.bottom, 50)
             }
         }
         .navigationBarHidden(true)
-        .onAppear {
-            // Auto-start scanning
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                isScanning = true
-            }
-        }
         .onChange(of: showSuccess) { success in
             if success {
                 // Auto-dismiss after successful registration
@@ -158,6 +122,20 @@ struct FaceRegistrationView: View {
                 }
             }
         }
+    }
+    
+    private func startScanning() {
+        isScanning = true
+        progress = 0.0
+        livenessDetected = false
+        statusMessage = "Hold still while we scan..."
+    }
+    
+    private func stopScanning() {
+        isScanning = false
+        progress = 0.0
+        livenessDetected = false
+        statusMessage = "Position your face in the circle"
     }
 }
 
@@ -314,22 +292,18 @@ class FaceCameraViewController: UIViewController {
     private func updatePreviewLayerFrame() {
         if let previewLayer = previewLayer {
             previewLayer.frame = view.bounds
-            print("Face registration preview layer frame updated to: \(view.bounds)")
         }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        print("FaceCameraViewController will appear")
         
         if captureSession?.isRunning == false {
             DispatchQueue.global(qos: .background).async { [weak self] in
                 self?.captureSession?.startRunning()
-                print("Restarted face registration camera session")
             }
         }
         
-        // Ensure preview layer is properly positioned
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.updatePreviewLayerFrame()
         }
@@ -352,23 +326,19 @@ class FaceCameraViewController: UIViewController {
                 DispatchQueue.main.async {
                     if granted {
                         self?.configureCameraSession()
-                    } else {
-                        print("Camera permission denied")
                     }
                 }
             }
         case .denied, .restricted:
-            print("Camera access denied or restricted")
+            break
         @unknown default:
-            print("Unknown camera authorization status")
+            break
         }
     }
     
     private func configureCameraSession() {
         // Check if running in simulator
         #if targetEnvironment(simulator)
-        print("Running in simulator - face registration camera preview not available")
-        // Create a simple colored background to show the view is working
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             let backgroundLayer = CALayer()
@@ -376,7 +346,6 @@ class FaceCameraViewController: UIViewController {
             backgroundLayer.frame = self.view.bounds
             self.view.layer.insertSublayer(backgroundLayer, at: 0)
             
-            // Add a label to show this is simulator mode
             let label = UILabel()
             label.text = "Face Registration\n(Simulator Mode)"
             label.textAlignment = .center
@@ -385,8 +354,6 @@ class FaceCameraViewController: UIViewController {
             label.font = UIFont.systemFont(ofSize: 18, weight: .medium)
             label.frame = self.view.bounds
             self.view.addSubview(label)
-            
-            print("Simulator face registration placeholder added")
         }
         return
         #endif
@@ -395,7 +362,6 @@ class FaceCameraViewController: UIViewController {
         captureSession.sessionPreset = .high
         
         guard let frontCamera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front) else {
-            print("Unable to access front camera")
             return
         }
         
@@ -421,12 +387,8 @@ class FaceCameraViewController: UIViewController {
                 self.previewLayer?.videoGravity = .resizeAspectFill
                 self.previewLayer?.frame = self.view.bounds
                 
-                // Ensure the preview layer is at the bottom of the view hierarchy
                 self.view.layer.insertSublayer(self.previewLayer!, at: 0)
                 
-                print("Face registration preview layer added with frame: \(self.view.bounds)")
-                
-                // Update the layer frame after a short delay to ensure proper layout
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     self.updatePreviewLayerFrame()
                 }
@@ -435,7 +397,6 @@ class FaceCameraViewController: UIViewController {
             // Start session on background queue
             DispatchQueue.global(qos: .background).async { [weak self] in
                 self?.captureSession?.startRunning()
-                print("Face registration camera session started")
             }
             
         } catch {
@@ -456,7 +417,6 @@ extension FaceCameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate
                 return
             }
             
-            // Use the first detected face
             let faceObservation = observations[0]
             DispatchQueue.main.async {
                 self?.delegate?.didDetectFace(faceObservation)

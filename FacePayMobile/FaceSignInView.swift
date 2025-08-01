@@ -70,23 +70,18 @@ struct FaceSignInView: View {
                 
                 // Circular progress indicator
                 ZStack {
-                    // Background circle
-                    Circle()
-                        .stroke(Color.white.opacity(0.3), lineWidth: 4)
-                        .frame(width: 160, height: 160)
                     
                     // Progress circle
                     Circle()
                         .trim(from: 0.0, to: CGFloat(progress))
                         .stroke(
-                            LinearGradient(
-                                gradient: Gradient(colors: getProgressColors()),
+                            LinearGradient(                                gradient: Gradient(colors: getProgressColors()),
                                 startPoint: .topTrailing,
                                 endPoint: .bottomLeading
                             ),
                             style: StrokeStyle(lineWidth: 6, lineCap: .round)
                         )
-                        .frame(width: 160, height: 160)
+                        .frame(width: 200, height: 400)
                         .rotationEffect(.degrees(-90))
                         .animation(.easeInOut(duration: 0.3), value: progress)
                     

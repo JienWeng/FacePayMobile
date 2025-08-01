@@ -19,6 +19,7 @@ struct ICScanStep: View {
     @State private var showingNameEdit = false
     @State private var editableName = ""
     @State private var rotationAngle: Double = 0
+    @StateObject private var userManager = UserManager()
     
     var body: some View {
         VStack(spacing: 30) {
@@ -123,7 +124,11 @@ struct ICScanStep: View {
                         extractedName = ""
                         editableName = ""
                     },
-                    onConfirm: onNext
+                    onConfirm: {
+                        // Save IC data to UserManager before proceeding
+                        userManager.updateUserFromIC(name: editableName, icNumber: extractedICNumber)
+                        onNext()
+                    }
                 )
             }
         }

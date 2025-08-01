@@ -11,6 +11,7 @@ struct OnboardingView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var currentStep = 0
     @State private var showingDashboard = false
+    @StateObject private var userManager = UserManager()
     
     var body: some View {
         NavigationView {
@@ -79,7 +80,7 @@ struct OnboardingView: View {
         }
         .navigationBarHidden(true)
         .fullScreenCover(isPresented: $showingDashboard) {
-            DashboardView(userManager: UserManager())
+            DashboardView(userManager: userManager)
         }
     }
 }

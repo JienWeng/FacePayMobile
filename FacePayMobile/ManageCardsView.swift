@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ManageCardsView: View {
-    @Binding var cards: [CardData]
+    @ObservedObject var userManager: UserManager
     @Environment(\.dismiss) private var dismiss
     @State private var selectedCard: CardData?
     @State private var showingDeleteAlert = false
@@ -52,7 +52,7 @@ struct ManageCardsView: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 10)
                     
-                    if cards.isEmpty {
+                    if userManager.userCards.isEmpty {
                         // Empty state
                         VStack(spacing: 20) {
                             Spacer()
@@ -77,7 +77,7 @@ struct ManageCardsView: View {
                         // Cards list
                         ScrollView {
                             LazyVStack(spacing: 16) {
-                                ForEach(cards) { card in
+                                ForEach(userManager.userCards) { card in
                                     ManageCardRow(
                                         card: card,
                                         onDelete: {
@@ -98,8 +98,8 @@ struct ManageCardsView: View {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {
                 if let cardToDelete = selectedCard,
-                   let index = cards.firstIndex(where: { $0.id == cardToDelete.id }) {
-                    cards.remove(at: index)
+                   let index = userManager.userCards.firstIndex(where: { $0.id == cardToDelete.id }) {
+                    userManager.removeCard(at: index)
                 }
             }
         } message: {
@@ -225,10 +225,5 @@ struct ManageCardRow: View {
 }
 
 #Preview {
-    @State var sampleCards = [
-        CardData(holderName: "John Doe", cardNumber: "1234 5678 9123 4567", expiryDate: "12/25", cvv: "123", gradientColors: [Color.blue, Color.purple], cardType: "Visa"),
-        CardData(holderName: "John Doe", cardNumber: "5432 1098 7654 3210", expiryDate: "11/26", cvv: "456", gradientColors: [Color.red, Color.orange], cardType: "Mastercard")
-    ]
-    
-    ManageCardsView(cards: $sampleCards)
+    ManageCardsView(userManager: UserManager())
 }

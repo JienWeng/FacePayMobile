@@ -33,6 +33,9 @@ class ICCameraViewController: UIViewController {
     private let frameView = UIView()
     private let captureButton = UIButton()
     private let dismissButton = UIButton()
+    private let loadingOverlay = UIView()
+    private let loadingIndicator = UIActivityIndicatorView(style: .large)
+    private let loadingLabel = UILabel()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -118,6 +121,9 @@ class ICCameraViewController: UIViewController {
         instructionLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(instructionLabel)
         
+        // Setup loading overlay
+        setupLoadingOverlay()
+        
         // Constraints
         NSLayoutConstraint.activate([
             // Frame view (IC frame) - landscape orientation
@@ -147,6 +153,51 @@ class ICCameraViewController: UIViewController {
         ])
     }
     
+    private func setupLoadingOverlay() {
+        // Loading overlay background
+        loadingOverlay.backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        loadingOverlay.isHidden = true
+        loadingOverlay.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(loadingOverlay)
+        
+        // Loading indicator
+        loadingIndicator.color = .white
+        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        loadingOverlay.addSubview(loadingIndicator)
+        
+        // Loading label
+        loadingLabel.text = "Processing IC..."
+        loadingLabel.textColor = .white
+        loadingLabel.font = UIFont.systemFont(ofSize: 18, weight: .medium)
+        loadingLabel.textAlignment = .center
+        loadingLabel.translatesAutoresizingMaskIntoConstraints = false
+        loadingOverlay.addSubview(loadingLabel)
+        
+        // Loading overlay constraints
+        NSLayoutConstraint.activate([
+            loadingOverlay.topAnchor.constraint(equalTo: view.topAnchor),
+            loadingOverlay.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            loadingOverlay.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            loadingOverlay.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            loadingIndicator.centerXAnchor.constraint(equalTo: loadingOverlay.centerXAnchor),
+            loadingIndicator.centerYAnchor.constraint(equalTo: loadingOverlay.centerYAnchor, constant: -10),
+            
+            loadingLabel.topAnchor.constraint(equalTo: loadingIndicator.bottomAnchor, constant: 16),
+            loadingLabel.centerXAnchor.constraint(equalTo: loadingOverlay.centerXAnchor)
+        ])
+    }
+    
+    private func showLoading() {
+        loadingOverlay.isHidden = false
+        loadingIndicator.startAnimating()
+    }
+    
+    private func hideLoading() {
+        loadingOverlay.isHidden = true
+        loadingIndicator.stopAnimating()
+    }
+    
     private func startSession() {
         DispatchQueue.global(qos: .userInitiated).async {
             self.captureSession.startRunning()
@@ -158,6 +209,7 @@ class ICCameraViewController: UIViewController {
     }
     
     @objc private func capturePhoto() {
+        showLoading()
         let settings = AVCapturePhotoSettings()
         photoOutput.capturePhoto(with: settings, delegate: self)
     }
@@ -169,6 +221,8 @@ class ICCameraViewController: UIViewController {
 
 extension ICCameraViewController: AVCapturePhotoCaptureDelegate {
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+        hideLoading()
+        
         guard let imageData = photo.fileDataRepresentation(),
               let originalImage = UIImage(data: imageData) else {
             return

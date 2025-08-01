@@ -11,6 +11,7 @@ struct PhoneNumberStep: View {
     let onNext: () -> Void
     @State private var phoneNumber: String = ""
     @FocusState private var isPhoneNumberFocused: Bool
+    @StateObject private var userManager = UserManager()
     
     var body: some View {
         VStack(spacing: 40) {
@@ -21,26 +22,34 @@ struct PhoneNumberStep: View {
                 .font(.system(size: 60, weight: .black))
                 .foregroundColor(.primaryYellow)
             
-            // Title and description
+            // Title and description  
             VStack(spacing: 16) {
                 Text("Phone Number")
                     .font(.system(size: 28, weight: .bold, design: .default))
                     .foregroundColor(.black)
                 
-                Text("Enter your phone number for verification")
-                    .font(.system(size: 16, weight: .medium, design: .default))
-                    .foregroundColor(.gray)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 40)
+                if !userManager.currentUser.name.isEmpty {
+                    Text("Hi \(userManager.currentUser.name)! Please enter your phone number")
+                        .font(.system(size: 16, weight: .medium, design: .default))
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 40)
+                } else {
+                    Text("Please enter your phone number")
+                        .font(.system(size: 16, weight: .medium, design: .default))
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 40)
+                }
             }
             
             Spacer()
             
-            // Phone number input with underline
+            // Phone number input only
             VStack(spacing: 8) {
                 TextField("", text: $phoneNumber)
                     .placeholder(when: phoneNumber.isEmpty) {
-                        Text("Enter phone number")
+                        Text("Phone number")
                             .font(.system(size: 18, weight: .medium, design: .default))
                             .foregroundColor(.gray.opacity(0.6))
                     }
@@ -48,44 +57,63 @@ struct PhoneNumberStep: View {
                     .foregroundColor(.black)
                     .keyboardType(.phonePad)
                     .focused($isPhoneNumberFocused)
-                    .textFieldStyle(PlainTextFieldStyle())
-                    .padding(.horizontal, 32)
+                    .textContentType(.telephoneNumber)
                 
-                // Thick black underline
                 Rectangle()
-                    .fill(Color.black)
-                    .frame(height: 3)
-                    .padding(.horizontal, 32)
+                    .fill(isPhoneNumberFocused ? Color.primaryYellow : Color.gray.opacity(0.3))
+                    .frame(height: 2)
+                    .animation(.easeInOut(duration: 0.2), value: isPhoneNumberFocused)
             }
+            .padding(.horizontal, 40)
             
             Spacer()
             
             // Continue button
             Button(action: {
-                if !phoneNumber.isEmpty {
-                    onNext()
-                }
+                // Save the phone number and proceed
+                userManager.updatePhoneNumber(phoneNumber)
+                onNext()
             }) {
-                Text("Continue")
-                    .font(.system(size: 18, weight: .bold, design: .default))
-                    .foregroundColor(.black)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(phoneNumber.isEmpty ? Color.gray.opacity(0.3) : Color.primaryYellow)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.black, lineWidth: 3)
-                    )
-                    .cornerRadius(12)
+                HStack {
+                    Text("Continue")
+                        .font(.system(size: 18, weight: .bold, design: .default))
+                        .foregroundColor(.black)
+                    
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 16, weight: .black))
+                        .foregroundColor(.black)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(phoneNumber.isValidPhoneNumber ? Color.primaryYellow : Color.gray.opacity(0.3))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.black, lineWidth: 3)
+                )
             }
-            .disabled(phoneNumber.isEmpty)
-            .padding(.horizontal, 32)
+            .disabled(!phoneNumber.isValidPhoneNumber)
+            .padding(.horizontal, 40)
             
             Spacer()
         }
-        .onAppear {
-            isPhoneNumberFocused = true
+        .padding(.horizontal, 20)
+        .onTapGesture {
+            isPhoneNumberFocused = false
         }
+        .onAppear {
+            // Load existing user data when view appears
+            userManager.loadUserData()
+        }
+    }
+}
+
+extension String {
+    var isValidPhoneNumber: Bool {
+        let phoneRegex = #"^[\+]?[0-9\-\(\)\s]{8,15}$"#
+        return NSPredicate(format: "SELF MATCHES %@", phoneRegex).evaluate(with: self)
     }
 }
 
