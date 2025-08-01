@@ -67,8 +67,7 @@ struct AddCardView: View {
                         Spacer()
                         
                         Text("Add Card")
-                            .font(.custom("Graphik-Black", size: 24))
-                            .fontWeight(.black)
+                            .font(.system(size: 24, weight: .bold, design: .default))
                             .foregroundColor(.black)
                         
                         Spacer()
@@ -121,10 +120,10 @@ struct AddCardView: View {
                                 if !cardNumber.isEmpty {
                                     HStack {
                                         Text("Detected Card Type:")
-                                            .font(.custom("Graphik-Bold", size: 14))
+                                            .font(.system(size: 14, weight: .medium, design: .default))
                                             .foregroundColor(.gray)
                                         Text(cardType)
-                                            .font(.custom("Graphik-Black", size: 14))
+                                            .font(.system(size: 14, weight: .semibold, design: .default))
                                             .foregroundColor(.black)
                                         Spacer()
                                     }
@@ -133,8 +132,7 @@ struct AddCardView: View {
                                 // Card gradient picker
                                 VStack(alignment: .leading, spacing: 8) {
                                     Text("Card Style")
-                                        .font(.custom("Graphik-Black", size: 16))
-                                        .fontWeight(.black)
+                                        .font(.system(size: 16, weight: .semibold, design: .default))
                                         .foregroundColor(.black)
                                     
                                     HStack(spacing: 12) {
@@ -176,8 +174,7 @@ struct AddCardView: View {
                                 onAddCard(newCard)
                             }) {
                                 Text("Add Card")
-                                    .font(.custom("Graphik-Black", size: 18))
-                                    .fontWeight(.black)
+                                    .font(.system(size: 18, weight: .bold, design: .default))
                                     .foregroundColor(.black)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 56)
@@ -244,13 +241,11 @@ struct InputField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(.custom("Graphik-Black", size: 16))
-                .fontWeight(.black)
+                .font(.system(size: 16, weight: .semibold, design: .default))
                 .foregroundColor(.black)
             
             TextField(placeholder, text: $text)
-                .font(.custom("Graphik-Bold", size: 16))
-                .fontWeight(.bold)
+                .font(.system(size: 16, weight: .medium, design: .default))
                 .foregroundColor(.black)
                 .padding(.bottom, 8)
                 .keyboardType(keyboardType)

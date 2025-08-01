@@ -25,13 +25,11 @@ struct FaceRegistrationStep: View {
                         .foregroundColor(.primaryYellow)
                     
                     Text("Register Your Face")
-                        .font(.custom("Graphik-Black", size: 24))
-                        .fontWeight(.black)
+                        .font(.system(size: 24, weight: .bold, design: .default))
                         .foregroundColor(.black)
                     
                     Text("Look straight at the camera for 4 seconds")
-                        .font(.custom("Graphik-Bold", size: 16))
-                        .fontWeight(.bold)
+                        .font(.system(size: 16, weight: .medium, design: .default))
                         .foregroundColor(.gray)
                         .multilineTextAlignment(.center)
                 }
@@ -46,8 +44,7 @@ struct FaceRegistrationStep: View {
                         Image(systemName: "camera")
                             .font(.system(size: 20, weight: .black))
                         Text("Start Face Registration")
-                            .font(.custom("Graphik-Black", size: 18))
-                            .fontWeight(.black)
+                            .font(.system(size: 18, weight: .bold, design: .default))
                     }
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity)
@@ -68,13 +65,11 @@ struct FaceRegistrationStep: View {
                         .foregroundColor(.green)
                     
                     Text("Face Registered!")
-                        .font(.custom("Graphik-Black", size: 24))
-                        .fontWeight(.black)
+                        .font(.system(size: 24, weight: .bold, design: .default))
                         .foregroundColor(.black)
                     
                     Text("Your face has been successfully registered")
-                        .font(.custom("Graphik-Bold", size: 16))
-                        .fontWeight(.bold)
+                        .font(.system(size: 16, weight: .medium, design: .default))
                         .foregroundColor(.gray)
                         .multilineTextAlignment(.center)
                 }
@@ -83,8 +78,7 @@ struct FaceRegistrationStep: View {
                 
                 Button(action: onNext) {
                     Text("Continue")
-                        .font(.custom("Graphik-Black", size: 18))
-                        .fontWeight(.black)
+                        .font(.system(size: 18, weight: .bold, design: .default))
                         .foregroundColor(.black)
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
@@ -126,7 +120,7 @@ struct FaceLandmarksPreviewView: View {
     var body: some View {
         VStack(spacing: 20) {
             Text("Face Registration")
-                .font(.custom("Graphik-Bold", size: 24))
+                .font(.system(size: 24, weight: .semibold, design: .default))
                 .foregroundColor(.black)
             
             // Status indicator
@@ -136,7 +130,7 @@ struct FaceLandmarksPreviewView: View {
                     .frame(width: 12, height: 12)
                 
                 Text(faceDetected ? "Face Detected" : "No Face Detected")
-                    .font(.custom("Graphik-Bold", size: 16))
+                    .font(.system(size: 16, weight: .medium, design: .default))
                     .foregroundColor(faceDetected ? .green : .red)
             }
             
@@ -168,7 +162,7 @@ struct FaceLandmarksPreviewView: View {
             if faceDetected && !landmarks.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Detected Features:")
-                        .font(.custom("Graphik-Bold", size: 16))
+                        .font(.system(size: 16, weight: .medium, design: .default))
                         .foregroundColor(.black)
                     
                     ScrollView {
@@ -189,7 +183,7 @@ struct FaceLandmarksPreviewView: View {
                                 Text("✓ Lips detected")
                             }
                         }
-                        .font(.custom("Graphik-Bold", size: 14))
+                        .font(.system(size: 14, weight: .regular, design: .default))
                         .foregroundColor(.gray)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -207,7 +201,7 @@ struct FaceLandmarksPreviewView: View {
             HStack(spacing: 16) {
                 Button(action: onRetake) {
                     Text("Retake")
-                        .font(.custom("Graphik-Bold", size: 16))
+                        .font(.system(size: 16, weight: .medium, design: .default))
                         .foregroundColor(.black)
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
@@ -221,7 +215,7 @@ struct FaceLandmarksPreviewView: View {
                 
                 Button(action: onConfirm) {
                     Text(faceDetected ? "Register Face" : "Skip for Now")
-                        .font(.custom("Graphik-Bold", size: 16))
+                        .font(.system(size: 16, weight: .medium, design: .default))
                         .foregroundColor(.black)
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)

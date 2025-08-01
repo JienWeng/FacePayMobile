@@ -17,13 +17,22 @@ struct CardView: View {
     private func getCardLogo() -> String {
         switch cardType.lowercased() {
         case "visa":
-            return "creditcard.and.123"
+            return "visa_logo"
         case "mastercard":
-            return "creditcard.circle"
-        case "american express":
-            return "creditcard.trianglebadge.exclamationmark"
+            return "mastercard_logo"
+        case "american express", "amex":
+            return "amex_logo"
         default:
             return "creditcard"
+        }
+    }
+    
+    private func isImageAsset() -> Bool {
+        switch cardType.lowercased() {
+        case "visa", "mastercard", "american express", "amex":
+            return true
+        default:
+            return false
         }
     }
     
@@ -34,9 +43,16 @@ struct CardView: View {
                     .font(.system(size: 16, weight: .black))
                     .foregroundStyle(Color.white)
                 Spacer()
-                Image(systemName: getCardLogo())
-                    .font(.system(size: 24, weight: .black))
-                    .foregroundStyle(Color.white)
+                if isImageAsset() {
+                    Image(getCardLogo())
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 40, height: 24)
+                } else {
+                    Image(systemName: getCardLogo())
+                        .font(.system(size: 24, weight: .black))
+                        .foregroundStyle(Color.white)
+                }
             }
             .padding(.horizontal)
             .padding(.top, 10)

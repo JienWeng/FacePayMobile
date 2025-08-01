@@ -36,7 +36,7 @@ struct OnboardingView: View {
                         Spacer()
                         
                         Text("Setup")
-                            .font(.custom("Graphik-Bold", size: 20))
+                            .font(.system(size: 20, weight: .semibold, design: .default))
                             .foregroundColor(.black)
                         
                         Spacer()
@@ -99,13 +99,11 @@ struct CompletionStep: View {
             // Title and description
             VStack(spacing: 16) {
                 Text("Setup Complete!")
-                    .font(.custom("Graphik-Black", size: 28))
-                    .fontWeight(.black)
+                    .font(.system(size: 28, weight: .bold, design: .default))
                     .foregroundColor(.black)
                 
                 Text("Your FacePay account is ready to use")
-                    .font(.custom("Graphik-Bold", size: 16))
-                    .fontWeight(.bold)
+                    .font(.system(size: 16, weight: .medium, design: .default))
                     .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 40)
@@ -116,8 +114,7 @@ struct CompletionStep: View {
             // Get started button
             Button(action: onComplete) {
                 Text("Get Started")
-                    .font(.custom("Graphik-Black", size: 18))
-                    .fontWeight(.black)
+                    .font(.system(size: 18, weight: .bold, design: .default))
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity)
                     .frame(height: 56)
@@ -152,13 +149,11 @@ struct ICWelcomeStep: View {
             // Title and description
             VStack(spacing: 16) {
                 Text("Scan Your IC")
-                    .font(.custom("Graphik-Black", size: 28))
-                    .fontWeight(.black)
+                    .font(.system(size: 28, weight: .bold, design: .default))
                     .foregroundColor(.black)
                 
                 Text("We'll scan your identification card to verify your identity")
-                    .font(.custom("Graphik-Bold", size: 16))
-                    .fontWeight(.bold)
+                    .font(.system(size: 16, weight: .medium, design: .default))
                     .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 40)
@@ -169,8 +164,7 @@ struct ICWelcomeStep: View {
             // Continue button
             Button(action: onNext) {
                 Text("Continue")
-                    .font(.custom("Graphik-Black", size: 18))
-                    .fontWeight(.black)
+                    .font(.system(size: 18, weight: .bold, design: .default))
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity)
                     .frame(height: 56)

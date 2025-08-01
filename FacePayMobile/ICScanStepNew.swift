@@ -1,5 +1,5 @@
 //
-//  ICScanStep.swift
+//  ICScanStepNew.swift
 //  FacePayMobile
 //
 //  Created by Lai Jien Weng on 31/07/2025.
@@ -8,7 +8,7 @@
 import SwiftUI
 import Vision
 
-struct ICScanStep: View {
+struct ICScanStepNew: View {
     let onNext: () -> Void
     
     @State private var showingCamera = false
@@ -335,4 +335,8 @@ struct ICResultsView: View {
             .padding(.horizontal, 32)
         }
     }
+}
+
+#Preview {
+    ICScanStepNew(onNext: {})
 }

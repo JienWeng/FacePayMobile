@@ -40,8 +40,7 @@ struct ManageCardsView: View {
                         Spacer()
                         
                         Text("Manage Cards")
-                            .font(.custom("Graphik-Black", size: 24))
-                            .fontWeight(.black)
+                            .font(.system(size: 24, weight: .bold, design: .default))
                             .foregroundColor(.black)
                         
                         Spacer()
@@ -63,13 +62,11 @@ struct ManageCardsView: View {
                                 .foregroundColor(.gray.opacity(0.5))
                             
                             Text("No Cards Added")
-                                .font(.custom("Graphik-Black", size: 24))
-                                .fontWeight(.black)
+                                .font(.system(size: 24, weight: .bold, design: .default))
                                 .foregroundColor(.black)
                             
                             Text("Add a card to start managing your payment methods")
-                                .font(.custom("Graphik-Bold", size: 16))
-                                .fontWeight(.bold)
+                                .font(.system(size: 16, weight: .medium, design: .default))
                                 .foregroundColor(.gray)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 40)
@@ -124,9 +121,16 @@ struct ManageCardRow: View {
                         .font(.system(size: 10, weight: .black))
                         .foregroundStyle(Color.white)
                     Spacer()
-                    Image(systemName: getCardLogo())
-                        .font(.system(size: 16, weight: .black))
-                        .foregroundStyle(Color.white)
+                    if isImageAsset() {
+                        Image(getCardLogo())
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 20, height: 12)
+                    } else {
+                        Image(systemName: getCardLogo())
+                            .font(.system(size: 16, weight: .black))
+                            .foregroundStyle(Color.white)
+                    }
                 }
                 .padding(.horizontal, 12)
                 .padding(.top, 8)
@@ -159,18 +163,15 @@ struct ManageCardRow: View {
             // Card info
             VStack(alignment: .leading, spacing: 4) {
                 Text("\(card.cardType) •••• \(String(card.cardNumber.suffix(4)))")
-                    .font(.custom("Graphik-Black", size: 16))
-                    .fontWeight(.black)
+                    .font(.system(size: 16, weight: .bold, design: .default))
                     .foregroundColor(.black)
                 
                 Text(card.holderName.uppercased())
-                    .font(.custom("Graphik-Bold", size: 14))
-                    .fontWeight(.bold)
+                    .font(.system(size: 14, weight: .medium, design: .default))
                     .foregroundColor(.gray)
                 
                 Text("Expires \(card.expiryDate)")
-                    .font(.custom("Graphik-Bold", size: 12))
-                    .fontWeight(.bold)
+                    .font(.system(size: 12, weight: .regular, design: .default))
                     .foregroundColor(.gray)
             }
             
@@ -203,13 +204,22 @@ struct ManageCardRow: View {
     private func getCardLogo() -> String {
         switch card.cardType.lowercased() {
         case "visa":
-            return "creditcard.and.123"
+            return "visa_logo"
         case "mastercard":
-            return "creditcard.circle"
-        case "american express":
-            return "creditcard.trianglebadge.exclamationmark"
+            return "mastercard_logo"
+        case "american express", "amex":
+            return "amex_logo"
         default:
             return "creditcard"
+        }
+    }
+    
+    private func isImageAsset() -> Bool {
+        switch card.cardType.lowercased() {
+        case "visa", "mastercard", "american express", "amex":
+            return true
+        default:
+            return false
         }
     }
 }

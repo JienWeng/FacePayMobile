@@ -10,13 +10,82 @@ import SwiftUI
 struct LandingView: View {
     @State private var showOnboarding = false
     @State private var showSignIn = false
+    @State private var showFaceSignInCamera = false
     @StateObject private var userManager = UserManager()
     
     var body: some View {
         ZStack {
-            // Background
-            Color.white
-                .ignoresSafeArea()
+            // Animated cloudy white and yellow background
+            ZStack {
+                // Base white background
+                Color.white
+                    .ignoresSafeArea()
+                
+                // Animated flowing yellow clouds
+                GeometryReader { geometry in
+                    ForEach(0..<5, id: \.self) { index in
+                        Circle()
+                            .fill(
+                                RadialGradient(
+                                    gradient: Gradient(colors: [
+                                        Color.primaryYellow.opacity(0.15),
+                                        Color.primaryYellow.opacity(0.05),
+                                        Color.clear
+                                    ]),
+                                    center: .center,
+                                    startRadius: 20,
+                                    endRadius: 100
+                                )
+                            )
+                            .frame(
+                                width: CGFloat.random(in: 80...200),
+                                height: CGFloat.random(in: 80...200)
+                            )
+                            .position(
+                                x: CGFloat.random(in: 0...geometry.size.width),
+                                y: CGFloat.random(in: 0...geometry.size.height)
+                            )
+                            .animation(
+                                Animation.easeInOut(duration: Double.random(in: 3...6))
+                                    .repeatForever(autoreverses: true)
+                                    .delay(Double(index) * 0.5),
+                                value: UUID()
+                            )
+                    }
+                }
+                
+                // Additional subtle white clouds
+                GeometryReader { geometry in
+                    ForEach(0..<3, id: \.self) { index in
+                        Ellipse()
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color.white.opacity(0.3),
+                                        Color.white.opacity(0.1),
+                                        Color.clear
+                                    ]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(
+                                width: CGFloat.random(in: 150...300),
+                                height: CGFloat.random(in: 60...120)
+                            )
+                            .position(
+                                x: CGFloat.random(in: 0...geometry.size.width),
+                                y: CGFloat.random(in: 0...geometry.size.height)
+                            )
+                            .animation(
+                                Animation.linear(duration: Double.random(in: 8...12))
+                                    .repeatForever(autoreverses: false)
+                                    .delay(Double(index) * 1.0),
+                                value: UUID()
+                            )
+                    }
+                }
+            }
             
             VStack(spacing: 40) {
                 Spacer()
@@ -28,10 +97,8 @@ struct LandingView: View {
                         .foregroundColor(.primaryYellow)
                     
                     Text("FacePay")
-                        .font(.custom("Graphik-Black", size: 36))
+                        .font(.system(size: 36, weight: .black, design: .default))
                         .foregroundColor(.black)
-                        .fontWeight(.black)
-                        .bold()
                 }
                 
                 Spacer()
@@ -39,10 +106,8 @@ struct LandingView: View {
                 // Description
                 VStack(spacing: 16) {
                     Text("Easiest way to pay")
-                        .font(.custom("Graphik-Black", size: 18))
-                        .fontWeight(.black)
+                        .font(.system(size: 18, weight: .semibold, design: .default))
                         .foregroundColor(.black)
-                        .bold()
                 }
                 
                 Spacer()
@@ -53,8 +118,7 @@ struct LandingView: View {
                         showOnboarding = true
                     }) {
                         Text("Get Started")
-                            .font(.custom("Graphik-Black", size: 18))
-                            .fontWeight(.black)
+                            .font(.system(size: 18, weight: .bold, design: .default))
                             .foregroundColor(.black)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
@@ -67,11 +131,10 @@ struct LandingView: View {
                     }
                     
                     Button(action: {
-                        showSignIn = true
+                        showFaceSignInCamera = true
                     }) {
-                        Text("Sign In")
-                            .font(.custom("Graphik-Black", size: 18))
-                            .fontWeight(.black)
+                        Text("Sign In with Face ID")
+                            .font(.system(size: 18, weight: .bold, design: .default))
                             .foregroundColor(.black)
                             .frame(maxWidth: .infinity)
                             .frame(height: 56)
@@ -93,6 +156,17 @@ struct LandingView: View {
         }
         .fullScreenCover(isPresented: $showSignIn) {
             FaceSignInView(userManager: userManager)
+        }
+        .fullScreenCover(isPresented: $showFaceSignInCamera) {
+            FaceSignInCameraView(
+                onSignInSuccess: {
+                    showFaceSignInCamera = false
+                    userManager.signIn()
+                },
+                onDismiss: {
+                    showFaceSignInCamera = false
+                }
+            )
         }
         .fullScreenCover(isPresented: $userManager.isSignedIn) {
             DashboardView(userManager: userManager)

@@ -32,8 +32,7 @@ struct FaceSignInView: View {
                     Spacer()
                     
                     Text("Sign In")
-                        .font(.custom("Graphik-Black", size: 24))
-                        .fontWeight(.black)
+                        .font(.system(size: 24, weight: .bold, design: .default))
                         .foregroundColor(.black)
                     
                     Spacer()
@@ -55,13 +54,11 @@ struct FaceSignInView: View {
                             .foregroundColor(.primaryYellow)
                         
                         Text("Welcome Back")
-                            .font(.custom("Graphik-Black", size: 28))
-                            .fontWeight(.black)
+                            .font(.system(size: 28, weight: .bold, design: .default))
                             .foregroundColor(.black)
                         
                         Text("Use Face ID to sign in securely")
-                            .font(.custom("Graphik-Bold", size: 16))
-                            .fontWeight(.bold)
+                            .font(.system(size: 16, weight: .medium, design: .default))
                             .foregroundColor(.gray)
                             .multilineTextAlignment(.center)
                     }
@@ -76,8 +73,7 @@ struct FaceSignInView: View {
                             Image(systemName: "faceid")
                                 .font(.system(size: 20, weight: .black))
                             Text("Sign In with Face ID")
-                                .font(.custom("Graphik-Black", size: 18))
-                                .fontWeight(.black)
+                                .font(.system(size: 18, weight: .bold, design: .default))
                         }
                         .foregroundColor(.black)
                         .frame(maxWidth: .infinity)
@@ -98,13 +94,11 @@ struct FaceSignInView: View {
                             .foregroundColor(.green)
                         
                         Text("Welcome, \(userManager.currentUser.name)!")
-                            .font(.custom("Graphik-Black", size: 28))
-                            .fontWeight(.black)
+                            .font(.system(size: 28, weight: .bold, design: .default))
                             .foregroundColor(.black)
                         
                         Text("You have been signed in successfully")
-                            .font(.custom("Graphik-Bold", size: 16))
-                            .fontWeight(.bold)
+                            .font(.system(size: 16, weight: .medium, design: .default))
                             .foregroundColor(.gray)
                             .multilineTextAlignment(.center)
                     }

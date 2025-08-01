@@ -26,13 +26,11 @@ struct DashboardView: View {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Welcome,")
-                                .font(.custom("Graphik-Bold", size: 18))
-                                .fontWeight(.bold)
+                                .font(.system(size: 18, weight: .medium, design: .default))
                                 .foregroundColor(.gray)
                             
                             Text(userManager.currentUser.name)
-                                .font(.custom("Graphik-Black", size: 32))
-                                .fontWeight(.black)
+                                .font(.system(size: 32, weight: .bold, design: .default))
                                 .foregroundColor(.black)
                         }
                         
@@ -45,8 +43,7 @@ struct DashboardView: View {
                                 Image(systemName: "rectangle.portrait.and.arrow.right")
                                     .font(.system(size: 16, weight: .black))
                                 Text("Log out")
-                                    .font(.custom("Graphik-Black", size: 16))
-                                    .fontWeight(.black)
+                                    .font(.system(size: 16, weight: .bold, design: .default))
                             }
                             .foregroundColor(.black)
                             .padding(.horizontal, 16)
@@ -82,13 +79,11 @@ struct DashboardView: View {
                                 }
                                 
                                 Text("Add Your First Card")
-                                    .font(.custom("Graphik-Black", size: 24))
-                                    .fontWeight(.black)
+                                    .font(.system(size: 24, weight: .bold, design: .default))
                                     .foregroundColor(.black)
                                 
                                 Text("Add a credit or debit card to start using FacePay")
-                                    .font(.custom("Graphik-Bold", size: 16))
-                                    .fontWeight(.bold)
+                                    .font(.system(size: 16, weight: .medium, design: .default))
                                     .foregroundColor(.gray)
                                     .multilineTextAlignment(.center)
                                     .padding(.horizontal, 40)
@@ -117,8 +112,7 @@ struct DashboardView: View {
                                             Image(systemName: "plus")
                                                 .font(.system(size: 16, weight: .black))
                                             Text("Add Card")
-                                                .font(.custom("Graphik-Black", size: 16))
-                                                .fontWeight(.black)
+                                                .font(.system(size: 16, weight: .bold, design: .default))
                                         }
                                         .foregroundColor(.black)
                                         .frame(maxWidth: .infinity)
@@ -138,8 +132,7 @@ struct DashboardView: View {
                                             Image(systemName: "creditcard.viewfinder")
                                                 .font(.system(size: 16, weight: .black))
                                             Text("Manage")
-                                                .font(.custom("Graphik-Black", size: 16))
-                                                .fontWeight(.black)
+                                                .font(.system(size: 16, weight: .bold, design: .default))
                                         }
                                         .foregroundColor(.primaryYellow)
                                         .frame(maxWidth: .infinity)
@@ -159,8 +152,7 @@ struct DashboardView: View {
                                 VStack(alignment: .leading, spacing: 16) {
                                     HStack {
                                         Text("Recent Transactions")
-                                            .font(.custom("Graphik-Black", size: 22))
-                                            .fontWeight(.black)
+                                            .font(.system(size: 22, weight: .bold, design: .default))
                                             .foregroundColor(.black)
                                         Spacer()
                                         Button("See All") {
@@ -169,13 +161,13 @@ struct DashboardView: View {
                                                 showingTransactions = true
                                             }
                                         }
-                                        .font(.custom("Graphik-Bold", size: 16))
+                                        .font(.system(size: 16, weight: .medium, design: .default))
                                         .foregroundColor(.primaryYellow)
                                     }
                                     
                                     if cards.isEmpty {
                                         Text("Add a card to see transactions")
-                                            .font(.custom("Graphik-Bold", size: 16))
+                                            .font(.system(size: 16, weight: .medium, design: .default))
                                             .foregroundColor(.gray)
                                             .padding(.vertical, 20)
                                     } else {
@@ -200,19 +192,17 @@ struct DashboardView: View {
                                                         
                                                         VStack(alignment: .leading, spacing: 4) {
                                                             Text(transaction.merchant)
-                                                                .font(.custom("Graphik-Black", size: 16))
-                                                                .fontWeight(.black)
+                                                                .font(.system(size: 16, weight: .bold, design: .default))
                                                                 .foregroundColor(.black)
                                                             Text(formatTransactionDate(transaction.date))
-                                                                .font(.custom("Graphik-Bold", size: 14))
+                                                                .font(.system(size: 14, weight: .medium, design: .default))
                                                                 .foregroundColor(.gray)
                                                         }
                                                         
                                                         Spacer()
                                                         
                                                         Text(String(format: "$%.2f", abs(transaction.amount)))
-                                                            .font(.custom("Graphik-Black", size: 16))
-                                                            .fontWeight(.black)
+                                                            .font(.system(size: 16, weight: .bold, design: .default))
                                                             .foregroundColor(.black)
                                                     }
                                                     .padding(.horizontal, 16)

@@ -24,13 +24,11 @@ struct PhoneNumberStep: View {
             // Title and description
             VStack(spacing: 16) {
                 Text("Phone Number")
-                    .font(.custom("Graphik-Black", size: 28))
-                    .fontWeight(.black)
+                    .font(.system(size: 28, weight: .bold, design: .default))
                     .foregroundColor(.black)
                 
                 Text("Enter your phone number for verification")
-                    .font(.custom("Graphik-Bold", size: 16))
-                    .fontWeight(.bold)
+                    .font(.system(size: 16, weight: .medium, design: .default))
                     .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 40)
@@ -43,12 +41,10 @@ struct PhoneNumberStep: View {
                 TextField("", text: $phoneNumber)
                     .placeholder(when: phoneNumber.isEmpty) {
                         Text("Enter phone number")
-                            .font(.custom("Graphik-Bold", size: 18))
-                            .fontWeight(.bold)
+                            .font(.system(size: 18, weight: .medium, design: .default))
                             .foregroundColor(.gray.opacity(0.6))
                     }
-                    .font(.custom("Graphik-Black", size: 18))
-                    .fontWeight(.black)
+                    .font(.system(size: 18, weight: .semibold, design: .default))
                     .foregroundColor(.black)
                     .keyboardType(.phonePad)
                     .focused($isPhoneNumberFocused)
@@ -71,8 +67,7 @@ struct PhoneNumberStep: View {
                 }
             }) {
                 Text("Continue")
-                    .font(.custom("Graphik-Black", size: 18))
-                    .fontWeight(.black)
+                    .font(.system(size: 18, weight: .bold, design: .default))
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity)
                     .frame(height: 56)

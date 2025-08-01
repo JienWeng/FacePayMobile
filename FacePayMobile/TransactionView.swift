@@ -31,8 +31,7 @@ struct TransactionView: View {
                         Spacer()
                         
                         Text("Transactions")
-                            .font(.custom("Graphik-Black", size: 24))
-                            .fontWeight(.black)
+                            .font(.system(size: 24, weight: .bold, design: .default))
                             .foregroundColor(.black)
                         
                         Spacer()
@@ -67,13 +66,11 @@ struct TransactionView: View {
                                         .foregroundColor(.gray.opacity(0.5))
                                     
                                     Text("No Transactions Yet")
-                                        .font(.custom("Graphik-Black", size: 20))
-                                        .fontWeight(.black)
+                                        .font(.system(size: 20, weight: .bold, design: .default))
                                         .foregroundColor(.gray)
                                     
                                     Text("Your transaction history will appear here")
-                                        .font(.custom("Graphik-Bold", size: 16))
-                                        .fontWeight(.bold)
+                                        .font(.system(size: 16, weight: .medium, design: .default))
                                         .foregroundColor(.gray.opacity(0.7))
                                         .multilineTextAlignment(.center)
                                 }
@@ -113,13 +110,11 @@ struct TransactionRowView: View {
             // Transaction details
             VStack(alignment: .leading, spacing: 4) {
                 Text(transaction.merchant)
-                    .font(.custom("Graphik-Black", size: 16))
-                    .fontWeight(.black)
+                    .font(.system(size: 16, weight: .bold, design: .default))
                     .foregroundColor(.black)
                 
                 Text(formatDate(transaction.date))
-                    .font(.custom("Graphik-Bold", size: 14))
-                    .fontWeight(.bold)
+                    .font(.system(size: 14, weight: .medium, design: .default))
                     .foregroundColor(.gray)
             }
             
@@ -127,8 +122,7 @@ struct TransactionRowView: View {
             
             // Amount
             Text(formatAmount(transaction.amount))
-                .font(.custom("Graphik-Black", size: 16))
-                .fontWeight(.black)
+                .font(.system(size: 16, weight: .bold, design: .default))
                 .foregroundColor(transaction.amount >= 0 ? .green : .black)
         }
         .padding(.horizontal, 16)
